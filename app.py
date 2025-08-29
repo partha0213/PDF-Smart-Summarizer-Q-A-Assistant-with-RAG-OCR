@@ -1,8 +1,17 @@
 import streamlit as st
 import time
+import base64
 from pathlib import Path
 from main_controller import PDFProcessor
 from config import MAX_FILE_SIZE, SUPPORTED_FORMATS
+
+# Initialize session state for login
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+
+# Default user credentials
+DEFAULT_EMAIL = "pankaj.shah@compliancecart.com"
+DEFAULT_PASSWORD = "12345678"
 
 # Set page configuration with custom theme
 st.set_page_config(
@@ -248,10 +257,117 @@ st.markdown("""
         ::-webkit-scrollbar-thumb:hover {
             background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
         }
+
+        /* Logo styling */
+        .logo-container {
+            text-align: center;
+            margin: 2rem auto 1rem;
+        }
+        
+        .logo-container img {
+            max-width: 200px;
+            height: auto;
+            margin: 0 auto;
+        }
+        
+        /* Login form styling */
+        .login-container {
+            max-width: 400px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .login-form input {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            border: 2px solid #e0e6ed;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+        
+        .login-form input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .login-button {
+            width: 100%;
+            padding: 0.8rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
     </style>
 """, unsafe_allow_html=True)
 
+def login_form():
+    # Center everything on the page
+    st.markdown("""
+        <div style="display: flex; justify-content: center; align-items: center; padding: 2rem 0;">
+            <img src="data:image/svg+xml;base64,{}" style="max-width: 300px; margin: 0 auto;">
+        </div>
+    """.format(base64.b64encode(open("Logo.svg", "rb").read()).decode()), unsafe_allow_html=True)
+    
+    st.markdown("""
+        <div class="header-container">
+            <div class="header-title">🔐 Login</div>
+            <div class="header-subtitle">Please log in to access the PDF Smart Assistant</div>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.markdown("""
+            <div class="feature-card">
+                <div class="feature-icon">👤</div>
+                <h3>User Login</h3>
+        """, unsafe_allow_html=True)
+        
+        email = st.text_input("Email", placeholder="Enter your email")
+        password = st.text_input("Password", type="password", placeholder="Enter your password")
+        
+        if st.button("Login", type="primary"):
+            if email == DEFAULT_EMAIL and password == DEFAULT_PASSWORD:
+                st.session_state.logged_in = True
+                st.success("Login successful! 🎉")
+                time.sleep(1)
+                st.rerun()
+            else:
+                st.error("Invalid email or password! Please try again.")
+        
+        st.markdown("</div>", unsafe_allow_html=True)
+
 def main():
+    # Add logout button to sidebar if logged in
+    if st.session_state.logged_in:
+        with st.sidebar:
+            if st.button("🚪 Logout"):
+                st.session_state.logged_in = False
+                st.rerun()
+    
+    # Check login status
+    if not st.session_state.logged_in:
+        login_form()
+        return
+    
     # Enhanced header with modern gradient
     st.markdown("""
         <div class="header-container">
